@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secret Admin Panel 🤫</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    body { background: #f4f6f9; color: #333; padding: 20px; }
+    h1 { color: #d63384; text-align: center; margin-bottom: 20px; font-size: 1.8rem; }
+    .stats-card { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; margin-bottom: 20px; font-weight: 600; font-size: 1.1rem; color: #d63384; }
+    .table-container { overflow-x: auto; background: #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
+    th { background: #d63384; color: #fff; padding: 12px; }
+    td { padding: 12px; border-bottom: 1px solid #eee; }
+    tr:hover { background: #fff0f5; }
+    .refresh-btn { display: block; width: 100%; max-width: 200px; margin: 0 auto 20px auto; padding: 10px; background: #d63384; color: #fff; border: none; border-radius: 25px; font-weight: 600; cursor: pointer; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <h1>Website Visitors Dashboard 📊</h1>
+  <button class="refresh-btn" onclick="fetchData()">Refresh Data 🔄</button>
+  
+  <div class="stats-card" id="totalVisits">Total Visits: Loading...</div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Device Date & Time (12h AM/PM)</th>
+          <th>Device & Browser</th>
+          <th>Location (City, Country)</th>
+          <th>Network / ISP</th>
+        </tr>
+      </thead>
+      <tbody id="visitLogs">
+        <tr><td colspan="4" style="text-align:center;">Loading logs...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const DB_URL = "https://birthday-website-fe53a-default-rtdb.firebaseio.com";
+
+    // Auto-convert ISO timestamps or any string into clean 12-Hour AM/PM time
+    function formatTimeDisplay(entry) {
+      const raw = entry.deviceTime || entry.time || entry.timestamp;
+      if (!raw) return "N/A";
+
+      // Agar pehle se formatted 12h time hai (bina ISO 'T' ke)
+      if (typeof raw === 'string' && !raw.includes('T') && (raw.includes('AM') || raw.includes('PM'))) {
+        return raw;
+      }
+
+      try {
+        const d = new Date(raw);
+        if (isNaN(d.getTime())) return raw;
+
+        return d.toLocaleString('en-US', {
+          month: 'numeric',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        });
+      } catch (e) {
+        return raw;
+      }
+    }
+
+    async function fetchData() {
+      const tbody = document.getElementById('visitLogs');
+      const totalCard = document.getElementById('totalVisits');
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Fetching fresh data...</td></tr>';
+
+      try {
+        const res = await fetch(`${DB_URL}/visits.json`);
+        const data = await res.json();
+
+        if (!data) {
+          totalCard.innerText = "Total Visits: 0";
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No visits recorded yet.</td></tr>';
+          return;
+        }
+
+        const entries = Object.values(data).reverse();
+        totalCard.innerText = `Total Visits: ${entries.length}`;
+
+        tbody.innerHTML = '';
+        entries.forEach(entry => {
+          const formattedTime = formatTimeDisplay(entry);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><b>${formattedTime}</b></td>
+            <td><b>${entry.device || 'Mobile'}</b> (${entry.browser || 'Browser'})</td>
+            <td><b>${entry.city || 'Unknown'}</b>${entry.region ? ', ' + entry.region : ''}<br>📍 ${entry.country || 'Unknown'}</td>
+            <td>${entry.isp || 'Mobile Data / WiFi'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Failed to load data. Please try again.</td></tr>';
+      }
+    }
+
+    window.onload = fetchData;
+  </script>
+</body>
+</html>
