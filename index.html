@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Surprise For You! 🤫</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    body { background: linear-gradient(135deg, #ffb6c1, #fff0f5, #ffe4e1); min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow-x: hidden; color: #4a4a4a; }
+    
+    .heart-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+    .heart { position: absolute; bottom: -10px; color: rgba(255, 105, 180, 0.4); animation: floatUp 8s infinite linear; }
+    @keyframes floatUp { 0% { transform: translateY(0) scale(0.8); opacity: 1; } 100% { transform: translateY(-100vh) scale(1.2); opacity: 0; } }
+    
+    .container { width: 90%; max-width: 420px; z-index: 10; position: relative; }
+    .card { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-radius: 24px; border: 1px solid rgba(255,255,255,0.7); padding: 35px 24px; box-shadow: 0 10px 30px rgba(214,51,132,0.1); text-align: center; display: none; animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .card.active { display: block; }
+    @keyframes popUp { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
+    h1, h2 { color: #d63384; margin-bottom: 12px; }
+    p { font-size: 0.95rem; line-height: 1.6; margin-bottom: 15px; color: #555; }
+    .italic { font-style: italic; color: #6c757d; }
+    
+    .secret-emoji { font-size: 4.5rem; margin-bottom: 15px; animation: pulse 2s infinite ease-in-out; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+    .btn-water {
+      background: linear-gradient(135deg, rgba(255, 182, 193, 0.75), rgba(214, 51, 132, 0.85));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(255, 255, 255, 0.8);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+      padding: 14px 32px;
+      border-radius: 40px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+      box-shadow: 0 8px 20px rgba(214, 51, 132, 0.25), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-water::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transition: 0.5s;
+    }
+    .btn-water:hover::before { left: 100%; }
+    .btn-water:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(214, 51, 132, 0.2); }
+
+    .wish-line { opacity: 0; transform: translateY(10px); animation: fadeInUp 0.6s ease forwards; margin-bottom: 12px; background: rgba(255,255,255,0.5); padding: 12px; border-radius: 12px; font-size: 0.9rem; text-align: left; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+    
+    .cake-emoji { font-size: 4rem; margin: 15px 0; animation: bounce 2s infinite; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    
+    .signature-badge {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 22px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 30px;
+      border: 1px solid rgba(214, 51, 132, 0.3);
+      box-shadow: 0 4px 15px rgba(214, 51, 132, 0.15);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #d63384;
+    }
+  </style>
+</head>
+<body>
+
+  <audio id="bgMusic" loop preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=happy-birthday-110058.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="heart-bg" id="heartContainer"></div>
+
+  <div class="container">
+    
+    <!-- PAGE 1: Secret Intro -->
+    <div class="card active" id="page1">
+      <div class="secret-emoji">🤫</div>
+      <h2>I have a surprise for you...</h2>
+      <p class="italic">Something special is waiting inside.</p>
+      <button class="btn-water" onclick="startSurprise()">Continue ✨</button>
+    </div>
+
+    <!-- PAGE 2: Happy Birthday Pop-up Page -->
+    <div class="card" id="page2">
+      <h1>Happy Birthday! 🎉</h1>
+      <div class="cake-emoji">🎂</div>
+      <p class="italic">"A little surprise made with lots of good wishes."</p>
+      <button class="btn-water" onclick="goToPage(3)">See Wishes ➔</button>
+    </div>
+
+    <!-- PAGE 3: Warm Wishes -->
+    <div class="card" id="page3">
+      <h2>🎂 Warm Wishes</h2>
+      <div>
+        <div class="wish-line" style="animation-delay: 0.2s;">Happy Birthday to someone who deserves a day filled with genuine happiness, laughter, and unforgettable moments.</div>
+        <div class="wish-line" style="animation-delay: 0.6s;">May this new year of your life bring confidence, exciting opportunities, beautiful memories, and countless reasons to smile.</div>
+        <div class="wish-line" style="animation-delay: 1.0s;">Keep believing in yourself, stay kind, stay strong, and never stop shining in your own unique way.</div>
+        <div class="wish-line" style="animation-delay: 1.4s;">No matter what life brings, I hope your heart always finds peace, your dreams keep growing, and your smile never fades.</div>
+        <div class="wish-line" style="animation-delay: 1.8s;">Enjoy every little moment today, because birthdays are not just about getting older—they're about celebrating how special your journey has been so far.</div>
+      </div>
+      <button class="btn-water" onclick="goToPage(4)">Final Message ✨</button>
+    </div>
+
+    <!-- PAGE 4: Final Message -->
+    <div class="card" id="page4">
+      <h1>Happy Birthday Once Again! 🎂</h1>
+      <p class="italic" style="margin-top: 15px;">"May today become one of those memories that always makes you smile whenever you think about it."</p>
+      
+      <div class="signature-badge">
+        Just a little effort for your day — Abdullah ✨
+      </div>
+
+      <p style="font-size: 0.85rem; margin-top: 18px;" class="italic">"Some people deserve a little extra effort on their special day." ✨</p>
+    </div>
+
+  </div>
+
+  <script>
+    const DB_URL = "https://birthday-website-fe53a-default-rtdb.firebaseio.com";
+
+    function detectDevice() {
+      const ua = navigator.userAgent;
+      if (/iPhone/i.test(ua)) return "iPhone";
+      if (/iPad/i.test(ua)) return "iPad";
+      if (/Android/i.test(ua)) return "Android Phone";
+      if (/Windows/i.test(ua)) return "Windows PC";
+      if (/Macintosh/i.test(ua)) return "MacBook";
+      return "Mobile / Tablet Device";
+    }
+
+    function detectBrowser() {
+      const ua = navigator.userAgent;
+      if (ua.includes("Chrome") && !ua.includes("Edg")) return "Chrome";
+      if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
+      if (ua.includes("Firefox")) return "Firefox";
+      if (ua.includes("Edg")) return "Edge";
+      return "Browser";
+    }
+
+    async function trackVisitor() {
+      try {
+        const ipRes = await fetch('https://ipwho.is/');
+        const loc = await ipRes.json();
+
+        const timestamp = new Date().toISOString();
+
+        const data = {
+          timestamp: timestamp,
+          device: detectDevice(),
+          browser: detectBrowser(),
+          city: loc.city || "Unknown City",
+          region: loc.region || "Unknown Region",
+          country: loc.country || "Unknown Country",
+          isp: loc.connection ? loc.connection.isp : (loc.org || "Mobile Data / WiFi")
+        };
+
+        fetch(`${DB_URL}/visits.json`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+      } catch (e) {
+        console.log("Tracking complete.");
+      }
+    }
+    window.onload = trackVisitor;
+
+    const music = document.getElementById('bgMusic');
+
+    function startSurprise() {
+      music.play().catch(err => console.log("Audio play failed:", err));
+      goToPage(2);
+    }
+
+    function goToPage(p) {
+      if (music.paused) {
+        music.play().catch(err => console.log("Audio play failed:", err));
+      }
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+      document.getElementById('page' + p).classList.add('active');
+      
+      if (p === 2 || p === 4) {
+        confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+      }
+    }
+
+    function createHeart() {
+      const h = document.createElement('div');
+      h.classList.add('heart'); h.innerHTML = '💖';
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.fontSize = Math.random() * 15 + 12 + 'px';
+      document.getElementById('heartContainer').appendChild(h);
+      setTimeout(() => h.remove(), 8000);
+    }
+    setInterval(createHeart, 400);
+  </script>
+</body>
+</html>
